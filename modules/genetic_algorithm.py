@@ -4,6 +4,9 @@ import plotly.express as px
 import numpy as np
 import random
 import time
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from workspace.save_helpers import render_save_experiment_btn
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -201,6 +204,15 @@ def show():
 
             if sum(best_chrom) == chrom_len:
                 st.success("🏆 Perfect solution found — all genes are 1!")
+            render_save_experiment_btn(
+                algorithm="Genetic Algorithm",
+                parameters={"chrom_len": chrom_len, "pop_size": pop_size,
+                            "generations": generations, "crossover_rate": crossover_rate,
+                            "mutation_rate": mutation_rate},
+                results={"best_fitness": best_per_gen[-1], "generations_run": len(best_per_gen)},
+                accuracy=best_per_gen[-1] / chrom_len,
+                key_suffix="ga",
+            )
 
     with tab2:
         crossover_visualizer()

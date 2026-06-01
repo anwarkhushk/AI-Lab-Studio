@@ -4,6 +4,9 @@ import numpy as np
 import random
 import math
 import time
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from workspace.save_helpers import render_save_experiment_btn
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -82,6 +85,13 @@ def hill_climbing_demo():
                           margin=dict(l=10, r=10, t=10, b=10))
         st.plotly_chart(fig, use_container_width=True)
         st.info(f"🏆 Best found: x = **{best_x:.4f}**, f(x) = **{best_y:.4f}**")
+        render_save_experiment_btn(
+            algorithm="Hill Climbing",
+            parameters={"start": start, "step_size": step, "restarts": runs},
+            results={"best_x": best_x, "best_y": best_y},
+            cost=float(-best_y),
+            key_suffix="hc",
+        )
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -159,6 +169,13 @@ def simulated_annealing_demo():
             st.plotly_chart(fig2, use_container_width=True)
 
         st.success(f"✅ Best found: x = **{bx:.4f}**, f(x) = **{by:.4f}** after {len(hx)} iterations")
+        render_save_experiment_btn(
+            algorithm="Simulated Annealing",
+            parameters={"T_init": T_init, "cooling": cooling, "start": start},
+            results={"best_x": bx, "best_y": by, "iterations": len(hx)},
+            cost=float(-by),
+            key_suffix="sa",
+        )
 
 
 # ──────────────────────────────────────────────────────────────────────────────

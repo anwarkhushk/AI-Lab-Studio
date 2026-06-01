@@ -3,6 +3,9 @@ import plotly.graph_objects as go
 import numpy as np
 import random
 import time
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from workspace.save_helpers import render_save_experiment_btn
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -117,6 +120,12 @@ def map_coloring_demo():
             )
             st.success(f"✅ Solved with {num_colors} colors in {len(steps)} steps!")
             st.json(result)
+            render_save_experiment_btn(
+                algorithm="CSP Map Coloring",
+                parameters={"num_colors": num_colors},
+                results={"steps": len(steps), "solution": result},
+                key_suffix="mc",
+            )
         else:
             st.error(f"❌ Cannot color the map with only {num_colors} colors.")
 
@@ -184,6 +193,12 @@ def nqueens_demo():
             idx = st.slider("View solution #", 1, len(solutions), 1, key="nq_idx")
             st.plotly_chart(draw_nqueens(solutions[idx - 1], n), use_container_width=True)
             st.code(f"Solution {idx}: {solutions[idx-1]}")
+            render_save_experiment_btn(
+                algorithm="CSP N-Queens",
+                parameters={"n": n},
+                results={"total_solutions": len(solutions)},
+                key_suffix="nq",
+            )
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -288,6 +303,12 @@ def sudoku_demo():
             st.markdown("**Solution**")
             st.plotly_chart(draw_sudoku(puzzle, solution), use_container_width=True)
         st.success("✅ Sudoku solved using Backtracking CSP!")
+        render_save_experiment_btn(
+            algorithm="CSP Sudoku",
+            parameters={"difficulty": difficulty},
+            results={"solved": True},
+            key_suffix="su",
+        )
 
 
 # ──────────────────────────────────────────────────────────────────────────────

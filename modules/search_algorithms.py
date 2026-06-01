@@ -5,6 +5,9 @@ from collections import deque
 import heapq
 import time
 import random
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from workspace.save_helpers import render_save_experiment_btn
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -289,6 +292,17 @@ def show():
                 st.success(f"✅ Path found: {' → '.join(str(n) for n in path)}")
             else:
                 st.error("❌ No path found.")
+
+        # ── Save experiment ──────────────────────────────────────────────
+        _sa_cost = sum(G[path[i]][path[i+1]]["weight"] for i in range(len(path)-1)) if len(path) > 1 else 0
+        render_save_experiment_btn(
+            algorithm=algo,
+            parameters={"start": start_node, "goal": goal_node, **extra},
+            results={"order": order, "path": path},
+            cost=float(_sa_cost),
+            path_length=len(path),
+            key_suffix="search",
+        )
 
     # Always show graph
     st.markdown("#### Graph Structure")

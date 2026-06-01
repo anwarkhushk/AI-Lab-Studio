@@ -1,6 +1,8 @@
 import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -25,6 +27,11 @@ st.markdown(
     #MainMenu { visibility: hidden; }
     footer { visibility: hidden; }
     header { visibility: hidden; }
+    /* Keep sidebar collapse/expand button accessible */
+    [data-testid="collapsedControl"] { visibility: visible !important; }
+    header [data-testid="stSidebarCollapsedControl"] { visibility: visible !important; }
+    section[data-testid="stSidebarCollapsedControl"] { visibility: visible !important; }
+
 
     /* ---------- GLOBAL BACKGROUND ---------- */
     .stApp {
@@ -149,6 +156,8 @@ from modules import (
     csp,
     ml_playground,
 )
+from auth import render_auth_page, render_logout_button, init_session
+from workspace import render_workspace_sidebar, render_workspace_page
 
 
 # ── SIDEBAR ────────────────────────────────────────────────────────────────────
@@ -208,7 +217,14 @@ def render_sidebar():
             unsafe_allow_html=True,
         )
 
-    return pages[page]
+        # ── Auth / workspace in sidebar ───────────────────────────────
+        is_guest = st.session_state.get("guest_mode", False)
+        open_ws  = render_workspace_sidebar(is_guest=is_guest)
+        if open_ws:
+            st.session_state["show_workspace"] = True
+        render_logout_button()
+
+    return pages[page], open_ws
 
 
 # ── HOME PAGE ──────────────────────────────────────────────────────────────────
@@ -345,7 +361,32 @@ def render_home():
 
 # ── MAIN ───────────────────────────────────────────────────────────────────────
 def main():
-    page = render_sidebar()
+    # 1. Initialise auth session state
+    init_session()
+
+    # 2. Require login / guest mode before showing any content
+    authenticated = st.session_state.get("authenticated", False)
+    guest_mode    = st.session_state.get("guest_mode", False)
+
+    if not authenticated and not guest_mode:
+        render_auth_page()
+        st.stop()
+
+    # 3. Normal app flow
+    page, open_ws = render_sidebar()
+
+    # 4. Workspace page (intercepts normal routing)
+    user = st.session_state.get("user")
+    if st.session_state.get("show_workspace") and user:
+        render_workspace_page(user)
+        if st.button("← Back to App", key="ws_back_btn"):
+            st.session_state["show_workspace"] = False
+            st.rerun()
+        return
+
+    # Clear workspace flag on normal nav
+    if not open_ws:
+        st.session_state["show_workspace"] = False
 
     if page == "Home":
         render_home()
@@ -365,3 +406,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
